@@ -272,7 +272,7 @@
                 <h3>Carga personalizada</h3>
                 <div class="form-group">
                     <label for="url-input">Cargar menú desde URL externa</label>
-                    <input type="url" id="url-input" placeholder="https://ejemplo.com/base.json">
+                    <input type="url" id="url-input" placeholder="https://ejemplo.com/formulas.json">
                 </div>
                 <div class="form-group">
                     <label for="file-input">Cargar menú desde archivo local</label>
@@ -346,7 +346,6 @@ try {
             const copyButton = document.getElementById('copy-button');
             const clearButton = document.getElementById('clear-button');
             const insertButton = document.getElementById('insert-button');
-
 // Ocultar el botón si no se está ejecutando dentro de eXeLearning
 let insideExe = false;
 try {
@@ -355,6 +354,7 @@ try {
 if (!insideExe) {
     insertButton.style.display = 'none';
 }
+
             const viewImageButton = document.getElementById('view-image-button');
             const delimiterSelector = document.getElementById('delimiter-selector');
             const copyCodeFeedback = document.getElementById('copy-code-feedback');
@@ -389,31 +389,9 @@ if (!insideExe) {
             
             // --- CONFIGURACIÓN ---
             const GITHUB_API_URL = 'https://api.github.com/repos/jjdeharo/app/contents/mat/editor_latex/docs';
-            // const DEFAULT_MENU_LOCAL_URL = '';
-            const DEFAULT_MENU_LOCAL_URL = './base.json';
-            const MENUS_MANIFEST_URL = './menus.json';
+            const DEFAULT_MENU_GITHUB_URL = 'https://raw.githubusercontent.com/jjdeharo/app/main/mat/editor_latex/formulas.json';
+            const DEFAULT_MENU_LOCAL_URL = './formulas.json';
             const MAX_RECENTS = 12;
-// --- Helper: listar archivos JSON en la misma carpeta ---
-const listLocalJsonFiles = async () => {
-    try {
-        const dirUrl = window.location.pathname.replace(/[^\/]*$/, ''); // carpeta actual
-        const response = await fetch(dirUrl || './', { cache: 'no-store' });
-        if (!response.ok) throw new Error('No permission to list directory');
-        const htmlText = await response.text();
-        const regex = /href=["']([^"']+\.json)["']/gi;
-        const files = new Set();
-        let m;
-        while ((m = regex.exec(htmlText)) !== null) {
-            let filename = decodeURIComponent(m[1]).split('/').pop();
-            if (filename && filename !== 'base.json') files.add(filename);
-        }
-        return Array.from(files);
-    } catch (e) {
-        console.warn('No se pudo listar la carpeta:', e);
-        return [];
-    }
-};
-
 
             // --- ESTADO DE LA APLICACIÓN ---
             let loadedMenus = new Map();
@@ -493,7 +471,7 @@ const listLocalJsonFiles = async () => {
             };
             const getAllCategories = () => {
                 const allCategories = new Map();
-                const menuOrder = ['default', 'manifest', 'localfile', 'url', 'github'];
+                const menuOrder = ['default', 'github', 'url', 'localfile'];
                 const sortedMenus = Array.from(loadedMenus.values()).sort((a,b) => menuOrder.indexOf(a.source) - menuOrder.indexOf(b.source));
                 for (const menu of sortedMenus) {
                     if (!menu.data || !menu.data.categorias) continue;
@@ -545,18 +523,16 @@ const listLocalJsonFiles = async () => {
                 loadedMenus.clear();
                 menuCache.clear();
                 githubMenuListCache = null;
-                
-let baseMenuData;
-try {
-    const response = await fetch(DEFAULT_MENU_LOCAL_URL, { cache: 'no-store' });
-    if (!response.ok) throw new Error("No se encontró base.json junto a index.html");
-    baseMenuData = await response.json();
-} catch (e) {
-    showAlert('Error al cargar menú', 'Asegúrate de que <strong>base.json</strong> está en la misma carpeta que <strong>index.html</strong>.');
-    return;
-}
+                let baseMenuData;
+                try {
+                    const response = await fetch(DEFAULT_MENU_LOCAL_URL);
+                    if (!response.ok) throw new Error("Local default not found");
+                    baseMenuData = await response.json();
+                } catch (e) {
+                    baseMenuData = await fetchMenuData(DEFAULT_MENU_GITHUB_URL);
+                }
                 if(baseMenuData) {
-                    loadedMenus.set('base.json', { id: 'base.json', url: DEFAULT_MENU_LOCAL_URL, source: 'default', name: 'Base', data: baseMenuData });
+                    loadedMenus.set('formulas.json', { id: 'formulas.json', url: DEFAULT_MENU_GITHUB_URL, source: 'default', name: 'Base', data: baseMenuData });
                 }
                 const previouslyAdded = loadAddedMenusFromStorage();
                 for (const menuInfo of previouslyAdded) {
@@ -604,49 +580,32 @@ try {
                     availableMenusList.appendChild(li);
                 });
             };
-            
-
-const loadAndDisplayAvailableMenus = async () => {
-    availableMenusList.innerHTML = '<li>Cargando...</li>';
-    const menuItems = new Map();
-
-    // Menú base (siempre activo)
-    const baseMenu = loadedMenus.get('base.json');
-    if (baseMenu) menuItems.set(baseMenu.id, { ...baseMenu });
-
-    // Leer manifest
-    let manifestMenus = [];
-    try {
-        const response = await fetch(MENUS_MANIFEST_URL, { cache: 'no-store' });
-        if (response.ok) {
-            const manifestData = await response.json();
-            manifestMenus = manifestData.menus || [];
-        }
-    } catch (e) {
-        console.warn('Manifest menus.json no encontrado o inválido.');
-    }
-
-    // Añadir los listados en el manifest
-    manifestMenus.forEach(fname => {
-        if (!menuItems.has(fname)) {
-            menuItems.set(fname, {
-                id: fname,
-                name: fname.replace('.json','').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),
-                url: fname,
-                source: 'manifest'
-            });
-        }
-    });
-
-    // Incluir menús ya cargados ad hoc (URL, localfile...)
-    for (const menu of loadedMenus.values()) {
-        if (!menuItems.has(menu.id)) menuItems.set(menu.id, { ...menu });
-    }
-
-    renderAvailableMenus(menuItems);
-};
-
-;
+            const loadAndDisplayAvailableMenus = async (forceRefetch = false) => {
+                if (!forceRefetch && githubMenuListCache) {
+                    renderAvailableMenus(githubMenuListCache);
+                    return;
+                }
+                availableMenusList.innerHTML = '<li>Cargando...</li>';
+                const menuItems = new Map();
+                const baseMenu = loadedMenus.get('formulas.json');
+                if(baseMenu) menuItems.set(baseMenu.id, { ...baseMenu });
+                try {
+                    const response = await fetch(GITHUB_API_URL);
+                    if (!response.ok) throw new Error(`Error al contactar con GitHub: ${response.statusText}`);
+                    const files = await response.json();
+                    if (!Array.isArray(files)) throw new Error('La respuesta de la API de GitHub no es válida.');
+                    files.filter(file => file.name.endsWith('.json') && file.type === 'file').forEach(file => {
+                         menuItems.set(file.name, { id: file.name, name: file.name.replace('.json', '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()), url: file.download_url, source: 'github' });
+                    });
+                } catch(e) {
+                    menuItems.set('error-github-api', { id: 'error-github-api', name: `No se pudo cargar la lista de menús.`, source: 'error' });
+                }
+                for (const menu of loadedMenus.values()){
+                     if (!menuItems.has(menu.id)) menuItems.set(menu.id, {...menu});
+                }
+                githubMenuListCache = menuItems;
+                renderAvailableMenus(githubMenuListCache);
+            };
 
             function showAlert(title, htmlMessage) {
                 alertModalTitle.textContent = title;
@@ -899,13 +858,33 @@ insertButton.addEventListener('click', () => {
             closeSettingsBtn.addEventListener('click', closeSettingsModal);
             settingsModal.addEventListener('click', (e) => { if(e.target === settingsModal) closeSettingsModal(); });
             urlInput.addEventListener('change', () => { if(urlInput.value) { addMenu({id: urlInput.value, url: urlInput.value, source: 'url', name: urlInput.value}).then(() => loadAndDisplayAvailableMenus()); urlInput.value = ''; } });
-            fileInput.addEventListener('change', () => { 
-                if(fileInput.files.length > 0) {
-                     const reader = new FileReader();
-                     reader.onload = (e) => { try { loadedMenus.set(fileInput.files[0].name, {id: fileInput.files[0].name, url: fileInput.files[0].name, source: 'localfile', name: fileInput.files[0].name, data: JSON.parse(e.target.result) }); rebuildToolbarAndUI(); } catch (err) { showModalFeedback('El archivo no es un JSON válido.', true); } };
-                    reader.readAsText(fileInput.files[0]); fileInput.value = '';
-                }
-            });
+            
+fileInput.addEventListener('change', () => {
+    if (fileInput.files.length === 0) return;
+    const [file] = fileInput.files;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        let jsonText = e.target.result;
+        let parsed = null;
+        try {
+            parsed = JSON.parse(jsonText);
+        } catch (parseErr) {
+            console.error('Error parseando JSON local:', parseErr);
+            showModalFeedback('El archivo no es un JSON válido (' + parseErr.message + ')', true);
+            return;
+        }
+        try {
+            loadedMenus.set(file.name, { id: file.name, url: file.name, source: 'localfile', name: file.name, data: parsed });
+            rebuildToolbarAndUI();
+            showModalFeedback('Menú cargado correctamente.', false);
+        } catch (logicErr) {
+            console.error('Error al integrar el menú:', logicErr);
+            showModalFeedback('Error al procesar el menú (' + logicErr.message + ')', true);
+        }
+    };
+    reader.readAsText(file, 'utf-8');
+    fileInput.value = '';
+});
             availableMenusList.addEventListener('change', (e) => { if(e.target.type !== 'checkbox') return; const ds = e.target.dataset; if (e.target.checked) addMenu(ds); else removeMenu(ds.id); });
             reloadMenusListBtn.addEventListener('click', () => loadAndDisplayAvailableMenus(true));
             clearCacheBtn.addEventListener('click', () => { menuCache.clear(); githubMenuListCache = null; showModalFeedback('Caché limpiada. Los menús se recargarán desde su origen.'); initializeApp(); });

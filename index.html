@@ -272,7 +272,7 @@
                 <h3>Carga personalizada</h3>
                 <div class="form-group">
                     <label for="url-input">Cargar menú desde URL externa</label>
-                    <input type="url" id="url-input" placeholder="https://ejemplo.com/formulas.json">
+                    <input type="url" id="url-input" placeholder="https://ejemplo.com/base.json">
                 </div>
                 <div class="form-group">
                     <label for="file-input">Cargar menú desde archivo local</label>
@@ -388,9 +388,7 @@ if (!insideExe) {
             const aiFeedback = document.getElementById('ai-feedback');
             
             // --- CONFIGURACIÓN ---
-            const GITHUB_API_URL = 'https://api.github.com/repos/jjdeharo/app/contents/mat/editor_latex/docs';
-            const DEFAULT_MENU_GITHUB_URL = 'https://raw.githubusercontent.com/jjdeharo/app/main/mat/editor_latex/formulas.json';
-            const DEFAULT_MENU_LOCAL_URL = './formulas.json';
+            const MANIFEST_URL = './menus.json';
             const MAX_RECENTS = 12;
 
             // --- ESTADO DE LA APLICACIÓN ---
@@ -518,31 +516,61 @@ if (!insideExe) {
                 }
                 loadAndDisplayAvailableMenus();
             };
-            const initializeApp = async () => {
-                loadRecents();
-                loadedMenus.clear();
-                menuCache.clear();
-                githubMenuListCache = null;
-                let baseMenuData;
-                try {
-                    const response = await fetch(DEFAULT_MENU_LOCAL_URL);
-                    if (!response.ok) throw new Error("Local default not found");
-                    baseMenuData = await response.json();
-                } catch (e) {
-                    baseMenuData = await fetchMenuData(DEFAULT_MENU_GITHUB_URL);
-                }
-                if(baseMenuData) {
-                    loadedMenus.set('formulas.json', { id: 'formulas.json', url: DEFAULT_MENU_GITHUB_URL, source: 'default', name: 'Base', data: baseMenuData });
-                }
-                const previouslyAdded = loadAddedMenusFromStorage();
-                for (const menuInfo of previouslyAdded) {
-                    const data = await fetchMenuData(menuInfo.url);
-                    if (data) loadedMenus.set(menuInfo.id, { ...menuInfo, data });
-                }
-                rebuildToolbarAndUI();
-                updatePreview();
-                addFooter();
-            };
+            
+
+const initializeApp = async () => {
+    loadRecents();
+    loadedMenus.clear();
+    menuCache.clear();
+
+    let manifestMenus = [];
+    try {
+        const manifestResponse = await fetch(MANIFEST_URL);
+        if (!manifestResponse.ok) throw new Error('No se pudo cargar menus.json');
+        const manifest = await manifestResponse.json();
+        if (!manifest.menus || !Array.isArray(manifest.menus)) {
+            throw new Error('menus.json no tiene el formato esperado.');
+        }
+        manifestMenus = manifest.menus;
+    } catch (e) {
+        console.error('Error cargando menus.json:', e);
+        showAlert('Error', 'No se pudo cargar <code>menus.json</code>.');
+    }
+
+    // Cargar únicamente base.json por defecto
+    const BASE_NAME = 'base.json';
+    if (manifestMenus.includes(BASE_NAME)) {
+        const url = `./${BASE_NAME}`;
+        const data = await fetchMenuData(url);
+        if (data) {
+            loadedMenus.set(BASE_NAME, {
+                id: BASE_NAME,
+                url,
+                source: 'default',
+                name: 'Base',
+                data
+            });
+        }
+    }
+
+    // Restaurar menús que el usuario hubiera añadido en otra sesión
+    const previouslyAdded = loadAddedMenusFromStorage();
+    for (const menuInfo of previouslyAdded) {
+        // Evita duplicar la base
+        if (menuInfo.id === BASE_NAME && loadedMenus.has(BASE_NAME)) continue;
+        const data = await fetchMenuData(menuInfo.url);
+        if (data) loadedMenus.set(menuInfo.id, { ...menuInfo, data });
+    }
+
+    // Guardamos listado total de menús del manifiesto para la UI
+    window.__manifestMenus = manifestMenus;
+
+    rebuildToolbarAndUI();
+    updatePreview();
+    addFooter();
+};
+
+
 
             // --- LÓGICA DE LA INTERFAZ DE USUARIO (UI) ---
             const renderAvailableMenus = (menuItemsMap) => {
@@ -580,32 +608,35 @@ if (!insideExe) {
                     availableMenusList.appendChild(li);
                 });
             };
-            const loadAndDisplayAvailableMenus = async (forceRefetch = false) => {
-                if (!forceRefetch && githubMenuListCache) {
-                    renderAvailableMenus(githubMenuListCache);
-                    return;
-                }
-                availableMenusList.innerHTML = '<li>Cargando...</li>';
-                const menuItems = new Map();
-                const baseMenu = loadedMenus.get('formulas.json');
-                if(baseMenu) menuItems.set(baseMenu.id, { ...baseMenu });
-                try {
-                    const response = await fetch(GITHUB_API_URL);
-                    if (!response.ok) throw new Error(`Error al contactar con GitHub: ${response.statusText}`);
-                    const files = await response.json();
-                    if (!Array.isArray(files)) throw new Error('La respuesta de la API de GitHub no es válida.');
-                    files.filter(file => file.name.endsWith('.json') && file.type === 'file').forEach(file => {
-                         menuItems.set(file.name, { id: file.name, name: file.name.replace('.json', '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()), url: file.download_url, source: 'github' });
-                    });
-                } catch(e) {
-                    menuItems.set('error-github-api', { id: 'error-github-api', name: `No se pudo cargar la lista de menús.`, source: 'error' });
-                }
-                for (const menu of loadedMenus.values()){
-                     if (!menuItems.has(menu.id)) menuItems.set(menu.id, {...menu});
-                }
-                githubMenuListCache = menuItems;
-                renderAvailableMenus(githubMenuListCache);
-            };
+            
+
+const loadAndDisplayAvailableMenus = async () => {
+    const menuItems = new Map();
+
+    // Añade todos los menús declarados en el manifiesto
+    if (window.__manifestMenus && Array.isArray(window.__manifestMenus)) {
+        window.__manifestMenus.forEach(fileName => {
+            const url = `./${fileName}`;
+            menuItems.set(fileName, {
+                id: fileName,
+                name: fileName.replace('.json', '').replace(/_/g, ' ').replace(/^(.)/, (m)=>m.toUpperCase()),
+                url,
+                source: fileName === 'base.json' ? 'default' : 'manifest'
+            });
+        });
+    }
+
+    // Añade los menús que el usuario cargó manualmente (URL o archivo)
+    loadedMenus.forEach(menu => {
+        if (!menuItems.has(menu.id)) {
+            menuItems.set(menu.id, { ...menu });
+        }
+    });
+
+    renderAvailableMenus(menuItems);
+};
+
+
 
             function showAlert(title, htmlMessage) {
                 alertModalTitle.textContent = title;
@@ -813,7 +844,7 @@ if (!insideExe) {
                 }
             });
             function addFooter() {
-                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.7</p>`;
+                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.8</p>`;
             }
 
             // --- EVENT LISTENERS ---

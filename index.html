@@ -616,11 +616,9 @@ manifest.menus.forEach(item=>{
         label.htmlFor = cb.id;
         label.className = 'menu-list-item-name';
 
-        let labelText = menu.name || menu.id;
-        if(menu.description){
-            labelText += ' – ' + menu.description;
-        }
+        let labelText = menu.description ? menu.description : (menu.name || menu.id);
         label.textContent = labelText;
+        label.title = menu.id;
 
         li.appendChild(cb);
         li.appendChild(label);
@@ -884,7 +882,7 @@ async function loadAndDisplayAvailableMenus(forceReload = false) {
                 }
             });
             function addFooter() {
-                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.25</p>`;
+                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.27</p>`;
             }
 
             // --- EVENT LISTENERS ---

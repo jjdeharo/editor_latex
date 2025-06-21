@@ -617,8 +617,8 @@
       "isCollapsed": true
     },
     {
-      "nombre": "Acentos",
-      "id": "acentos",
+      "nombre": "Decoraciones",
+      "id": "decoraciones",
       "grid_template_columns": "repeat(auto-fit, minmax(70px, 1fr))",
       "elementos": [
         {
@@ -656,9 +656,15 @@
           "latex": "\\ddot{}",
           "display": "\\ddot{a}",
           "title": "Doble punto"
+        },
+        {
+          "type": "button",
+          "title": "Sombrero amplio",
+          "latex": "\\widehat{}",
+          "display": "\\widehat{ABC}"
         }
       ],
-      "isCollapsed": true
+      "isCollapsed": false
     },
     {
       "nombre": "Anotaciones",

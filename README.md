@@ -2,81 +2,97 @@
 
 ## Descripción
 
-Este proyecto es una herramienta gratuita pensada para que docentes puedan crear y editar fórmulas matemáticas fácilmente, sin necesidad de conocer a fondo el lenguaje LaTeX. Permite generar materiales educativos con notación matemática clara, profesional y bien presentada. Se puede utilizar en programas que admitan LaTeX como eXeLearning, Moodle, etc.
-.
+Este proyecto es una herramienta gratuita pensada para que docentes y estudiantes puedan crear y editar fórmulas matemáticas fácilmente, sin necesidad de conocer a fondo el lenguaje LaTeX. Permite generar materiales educativos con notación matemática clara y profesional. Se puede usar con programas que admiten LaTeX, como eXeLearning, Moodle, Overleaf, etc.
 
-## 1. index.html → El editor de fórmulas
-
-
-### Para qué sirve
-
-* Escribir fórmulas fácilmente usando un menú visual de botones con símbolos matemáticos y estructuras comunes (fracciones, raíces, sumatorios, matrices, etc.).
-* Ver en tiempo real cómo queda la fórmula, gracias a MathJax, sin necesidad de compilar.
-* Copiar el código LaTeX ya listo para pegarlo en documentos, Moodle, Overleaf u otros entornos.
-* Exportar la fórmula como imagen PNG para usar en presentaciones, apuntes, webs, etc.
-* Buscar comandos por nombre o por código (por ejemplo, “raíz” o `\sqrt`).
-* Cargar **menús personalizados** de fórmulas desde archivos locales o desde URLs externas.
-* Acceder rápidamente a los últimos comandos usados desde una pestaña de "Recientes".
-
-### Cómo se usa
-
-1. Escribe o selecciona una fórmula usando los botones.
-2. Visualiza el resultado al instante.
-3. Copia el código o descarga la imagen.
+El programa funciona tanto de forma **independiente** como **integrado en eXeLearning**. Cuando se detecta que se abre desde eXe, aparece el botón verde para insertar la fórmula directamente. Si se abre de forma autónoma (por ejemplo, en un navegador), este botón no aparece.
 
 ---
 
-## 2. editor_menu.html → Editor del menú del _Editor LaTeX online_ para crear menús personalizados
+## 1. `index.html` → Editor visual de fórmulas LaTeX
 
-Este programa es un **editor visual de menús de fórmulas LaTeX**. Permite crear, editar, organizar y exportar colecciones de botones que insertan fórmulas matemáticas en LaTeX, todo de manera visual y sin necesidad de escribir código a mano.
+### Funcionalidades principales
 
-### Para qué sirve
+- Escribir fórmulas con un menú visual de botones y categorías personalizables.
+- Ver la fórmula en tiempo real gracias a MathJax.
+- Copiar el código LaTeX listo para usar, con o sin delimitadores.
+- Exportar la fórmula como imagen PNG.
+- Buscar por nombre o código (ej: `raíz`, `\int`...).
+- Acceso rápido a fórmulas usadas recientemente.
+- Asistente con IA para generar fórmulas a partir de una descripción.
+- Gestión de **múltiples menús** desde archivos locales, URLs externas o GitHub.
+- Carga automática de menús definidos en `menus.json`, con descripciones visibles.
 
-* Crear categorías de botones que contienen fórmulas LaTeX.
-* Editar y reorganizar las fórmulas con solo arrastrar y soltar.
-* Copiar el resultado como archivo JSON estructurado para integrarlo en otros editores.
-* Exportar el archivo completo para su uso en proyectos compatibles.
-* Cargar fácilmente archivos `.json` alojados en GitHub, pegarlos desde el portapapeles o subirlos deste tu dispositivo.
-* Usar un asistente con inteligencia artificial que genera automáticamente categorías, elementos o archivos JSON completos con fórmulas.
+### Cómo usarlo
 
-### Cómo se usa
-
-1. Añade una categoría o carga un archivo de ejemplo.
-2. Dentro de cada categoría, añade elementos con su código LaTeX.
-3. Previsualiza cómo se verán los botones.
-4. Copia o exporta el archivo JSON generado para integrarlo en tu editor LaTeX. Puedes cargarlo desde tu ordenador o si lo colocas en Internet (por ejemplo en un repositorio de GitHub, usando el acceso raw) podrás escribir su dirección.
-
+1. Selecciona una fórmula o escribe código manualmente.
+2. Visualiza el resultado.
+3. Copia el código, descárgalo como imagen o insértalo directamente en eXeLearning.
 
 ---
 
-## Archivos de menús de fórmulas
+## 2. `editor_menu.html` → Editor visual de menús de fórmulas
 
-Los archivos de menús están en formato JSON y definen colecciones de botones con fórmulas LaTeX organizadas por categorías. Estos archivos pueden ser cargados por el editor de menús (`editor_menu.html`) o por el editor de fórmulas (`index.html`).
+Este archivo permite crear o modificar colecciones de botones con fórmulas LaTeX organizadas por categorías.
 
-Permiten al usuario trabajar con expresiones matemáticas sin necesidad de memorizar la sintaxis LaTeX, seleccionándolas directamente desde menús visuales.
+### Funcionalidades principales
 
-## Archivo base
+- Crear, editar y organizar menús de fórmulas sin escribir JSON manualmente.
+- Usar arrastrar y soltar para reorganizar los botones.
+- Asistente con IA para generar elementos, categorías o archivos completos.
+- Exportar los menús en formato JSON para integrarlos en `index.html`.
+- Cargar archivos `.json` desde tu ordenador, portapapeles o URLs externas (como GitHub Raw).
 
-El archivo `formulas.json` actúa como menú base. Se carga siempre por defecto al iniciar el editor, y contiene una selección general de fórmulas organizadas por temas. A partir de este archivo se puede ampliar o modificar el contenido utilizando el editor visual.
+---
 
-## Estructura general de los archivos
+## Menús de fórmulas (`.json`)
 
-Cada archivo contiene un objeto con una única propiedad `categorias`, que es una lista de categorías temáticas. Cada categoría incluye un conjunto de botones que representan fórmulas.
+Los menús definen botones organizados en categorías con fórmulas LaTeX. Se pueden cargar desde `index.html` o crear con `editor_menu.html`.
+
+El menú base por defecto es `base.json`, cargado automáticamente al abrir el editor. Puedes añadir más desde la ventana "Gestionar menús".
+
+### Manifest `menus.json`
+
+El archivo `menus.json` actúa como índice de los menús disponibles para el editor. Contiene un array llamado `menus`, donde cada elemento especifica:
+
+- `file`: nombre del archivo `.json` que contiene las categorías y fórmulas.
+- `description`: texto que describe el contenido del menú (aparece en la interfaz).
+
+Ejemplo:
+
+```json
+{
+  "menus": [
+    { "file": "base.json",       "description": "Símbolos básicos" },
+    { "file": "entornos.json",   "description": "Entornos matemáticos" },
+    { "file": "estadistica.json","description": "Estadística" },
+    { "file": "fisica.json",     "description": "Física" },
+    { "file": "geometria.json",  "description": "Geometría" }
+  ]
+}
+```
+
+---
+
+## Estructura de un archivo de menú
 
 ```json
 {
   "categorias": [
     {
-      "nombre": "string",
-      "id": "string",
-      "grid_template_columns": "string",
+      "nombre": "Álgebra",
+      "id": "algebra",
+      "grid_template_columns": "repeat(auto-fit, minmax(80px, 1fr))",
       "isCollapsed": false,
       "elementos": [
         {
           "type": "button",
-          "latex": "string",
-          "display": "string",
-          "title": "string"
+          "latex": "\\frac{a}{b}",
+          "display": "\\frac{a}{b}",
+          "title": "Fracción"
+        },
+        {
+          "type": "custom_matrix",
+          "title": "Matriz personalizada"
         }
       ]
     }
@@ -84,33 +100,13 @@ Cada archivo contiene un objeto con una única propiedad `categorias`, que es un
 }
 ```
 
-Hay un elemento especial con la propiedad `type: custom_matrix` que actualmente se encuentra en la categoría "matrices" de `formulas.json` que hace que el programa despliegue una serie de campos para crear matrices personalizadas, tanto en el número de filas y de columnas como de su contenido. 
-
-### Descripción de los campos
-
-* `categorias`: Lista de categorías temáticas (por ejemplo, fracciones, límites, álgebra...).
-
-  * `nombre`: Nombre visible de la categoría.
-  * `id`: Identificador único de la categoría (en minúsculas y sin espacios).
-  * `grid_template_columns`: Valor CSS para organizar la rejilla de botones.
-  * `isCollapsed`: Si es `false`, la categoría se muestra desplegada; si es `true`, aparece plegada al cargar.
-  * `elementos`: Lista de botones de la categoría.
-
-    * `type`: Siempre `"button"`.
-    * `latex`: Código LaTeX que se insertará al hacer clic.
-    * `display`: Fórmula que se muestra en el botón (puede coincidir con `latex`).
-    * `title`: Descripción breve de la fórmula.
-
-## Ubicación de los archivos
-
-Los archivos de menús adicionales están ubicados en la carpeta `docs`. Pueden cargarse desde el editor visual o utilizarse directamente mediante URL para integrarlos en otros proyectos o editores personalizados.
-
+---
 
 ## Licencia
 
-Este proyecto tiene licencia Creative Commons BY-SA. Puedes usarlo, modificarlo y compartirlo libremente, siempre que cites al autor y mantengas la misma licencia en tus versiones.
+Este proyecto tiene licencia Creative Commons BY-SA. Puedes usarlo, modificarlo y compartirlo libremente, citando al autor y manteniendo la misma licencia.
 
 ---
 
-**Autor**: Juan José de Haro
+**Autor**: Juan José de Haro  
 [https://bilateria.org](https://bilateria.org)

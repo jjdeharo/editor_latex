@@ -460,7 +460,7 @@ if (!insideExe) {
                 }
             };
             const removeMenu = (menuId) => {
-                if (loadedMenus.has(menuId) && loadedMenus.get(menuId).id !== 'base.json') {
+                if (loadedMenus.has(menuId)) {
                     loadedMenus.delete(menuId);
                     rebuildToolbarAndUI();
                     saveAddedMenusToStorage();
@@ -602,8 +602,8 @@ manifest.menus.forEach(item=>{
         cb.type = 'checkbox';
         cb.id = `menu-checkbox-${menu.id}`;
         if(menu.id === 'base.json' || menu.source === 'default'){
-            cb.checked = true;
-            cb.disabled = true;
+            cb.checked = loadedMenus.has(menu.id);
+            
         }else{
             cb.checked = loadedMenus.has(menu.id);
         }
@@ -882,7 +882,7 @@ async function loadAndDisplayAvailableMenus(forceReload = false) {
                 }
             });
             function addFooter() {
-                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.27</p>`;
+                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.28</p>`;
             }
 
             // --- EVENT LISTENERS ---
@@ -956,7 +956,41 @@ fileInput.addEventListener('change', () => {
 });
             availableMenusList.addEventListener('change', (e) => { if(e.target.type !== 'checkbox') return; const ds = e.target.dataset; if (e.target.checked) addMenu(ds); else removeMenu(ds.id); });
             reloadMenusListBtn.addEventListener('click', () => loadAndDisplayAvailableMenus(true));
-            clearCacheBtn.addEventListener('click', () => { menuCache.clear(); githubMenuListCache = null; showModalFeedback('Caché limpiada. Los menús se recargarán desde su origen.'); initializeApp(); });
+            clearCacheBtn.addEventListener('click', async () => {
+  try {
+    /* Local and session storage */
+    localStorage.clear();
+    sessionStorage.clear();
+
+    /* CacheStorage */
+    if ('caches' in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map(name => caches.delete(name)));
+    }
+
+    /* IndexedDB (browsers compatibles) */
+    if (window.indexedDB && indexedDB.databases) {
+      const dbs = await indexedDB.databases();
+      await Promise.all(dbs.map(db => indexedDB.deleteDatabase(db.name)));
+    }
+
+    /* Cookies propias del dominio */
+    document.cookie.split(';').forEach(cookie => {
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    });
+
+    /* Cachés internas ya existentes */
+    menuCache.clear();
+    githubMenuListCache = null;
+  } catch (err) {
+    console.error('Error al limpiar almacenamiento:', err);
+  } finally {
+    /* Recarga forzada desde servidor */
+    location.reload(true);
+  }
+});
             alertModalCloseBtn.addEventListener('click', hideAlert);
             alertModal.addEventListener('click', (e) => { if (e.target === alertModal) hideAlert(); });
             askAiBtn.addEventListener('click', openAiModal);

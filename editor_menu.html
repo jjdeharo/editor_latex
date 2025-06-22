@@ -105,7 +105,7 @@
     <footer class="text-center py-4 bg-gray-100 text-gray-600 text-sm">
         <p><a href="https://labia.tiddlyhost.com" target="_blank" class="hover:text-blue-600">Laboratorio de aplicaciones educativas</a> - <a href="https://bilateria.org" target="_blank" class="hover:text-blue-600">Aplicación hecha por Juan José de Haro</a></p>
         <p class="mt-1"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" class="hover:text-blue-600">Licencia Creative Commons BY-SA</a></p>
-            <p class="mt-1">v4.29</p>
+            <p class="mt-1">v4.30</p>
 </footer>
 
     <!-- Modales -->
@@ -114,7 +114,7 @@
         <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center hidden"><div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-sm"><h2 id="confirm-title" class="text-xl font-bold mb-4"></h2><p id="confirm-message"></p><div class="mt-6 flex justify-end space-x-3"><button id="confirm-cancel" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">Cancelar</button><button id="confirm-delete" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">Eliminar</button></div></div></div>
         <div id="paste-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center hidden"><div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-lg"><h2 class="text-2xl font-bold mb-4">Pegar contenido JSON</h2><div class="space-y-4"><textarea id="paste-textarea" rows="8" class="w-full border-gray-300 rounded-md font-mono text-sm" placeholder="Pega aquí el código JSON..."></textarea><div><label class="block text-sm font-medium text-gray-700">Tipo de contenido a pegar:</label><select id="paste-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"><option value="full">JSON Completo (en nueva pestaña)</option><option value="category">Categoría (en pestaña actual)</option><option value="element">Elemento(s) (en pestaña actual)</option></select></div><div id="paste-category-selector-div" class="hidden"><label class="block text-sm font-medium text-gray-700">Añadir elemento(s) a la categoría:</label><select id="paste-category-selector" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></select></div></div><div class="mt-6 flex justify-end space-x-3"><button id="paste-cancel" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">Cancelar</button><button id="paste-add" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">Añadir Contenido</button></div></div></div>
         <div id="ai-creator-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 hidden"><div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]"><h2 class="text-2xl font-bold mb-4 flex-shrink-0">Asistente de Creación con IA</h2><div class="overflow-y-auto -mx-6 px-6"><div class="space-y-4"><div><label for="ai-choice" class="block text-sm font-medium text-gray-700">1. ¿Qué quieres crear?</label><select id="ai-choice" name="ai-choice" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"><option value="full_json">Archivo JSON completo</option><option value="category">Una sola categoría</option><option value="multiple_elements">Varios elementos</option></select></div><div id="ai-inputs-container" class="mt-4"></div></div><div class="mt-6"><h3 class="text-base font-medium text-gray-900">2. Genera y usa el prompt</h3><p class="text-sm text-gray-600 mt-1">Sigue los pasos para generar un prompt y obtener el código JSON de la IA que prefieras.</p><textarea id="ai-prompt-output" rows="5" class="w-full border-gray-300 rounded-md font-mono text-xs mt-2 bg-gray-50" readonly placeholder="Aquí aparecerá el prompt generado..."></textarea><div class="mt-2 space-y-2"><button id="ai-generate-prompt-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">1. Generar Prompt</button><div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><button id="ai-launch-chatgpt-btn" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition disabled:bg-green-300 disabled:cursor-not-allowed" disabled>2. Lanzar en ChatGPT</button><button id="ai-copy-prompt-btn" class="w-full bg-gray-500 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed" disabled>2a. Copiar (otra IA)</button></div></div></div><div class="mt-6"><h3 class="text-base font-medium text-gray-900">3. Pega el resultado en el editor</h3><p class="text-sm text-gray-600 mt-1">Una vez tengas el código, cierra esta ventana y usa el botón <strong class="text-yellow-600">"Pegar"</strong> de la barra superior para añadir tu nueva creación.</p></div></div><div class="mt-auto pt-6 flex-shrink-0 flex justify-end"><button id="ai-creator-close-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">Cerrar</button></div></div></div>
-        <div id="add-tab-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 hidden"><div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-lg"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold mb-4">Añadir conjunto de fórmulas</h2><button id="clear-cache-btn" class="text-sm text-blue-600 hover:underline">Limpiar caché</button></div><div class="space-y-4"><h3 class="text-lg font-medium text-gray-900">Menús disponibles</h3><div id="github-files-list" class="space-y-2 max-h-60 overflow-y-auto">Cargando lista...</div><hr class="my-4"><h3 class="text-lg font-medium text-gray-900">Otras fuentes</h3><div class="flex items-center space-x-2"><input type="url" id="custom-url-input" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" placeholder="Pegar URL de un JSON..."><button id="custom-url-load-btn" class="bg-indigo-500 text-white px-3 py-2 rounded-lg shadow-sm hover:bg-indigo-600 transition flex-shrink-0">Cargar</button></div><div class="mt-2"><label for="custom-file-input" class="w-full cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition text-center block">Abrir archivo local...</label><input type="file" id="custom-file-input" class="hidden" accept=".json"></div></div><div class="mt-6 flex justify-end"><button id="add-tab-close-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">Cerrar</button></div></div></div>
+        <div id="add-tab-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 hidden"><div class="bg-white p-6 rounded-lg shadow-2xl w-full max-w-lg"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold mb-4">Añadir conjunto de fórmulas</h2><button id="clear-cache-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition">Limpiar caché</button></div><div class="space-y-4"><h3 class="text-lg font-medium text-gray-900">Menús disponibles</h3><div id="github-files-list" class="space-y-2 max-h-60 overflow-y-auto">Cargando lista...</div><hr class="my-4"><h3 class="text-lg font-medium text-gray-900">Otras fuentes</h3><div class="flex items-center space-x-2"><input type="url" id="custom-url-input" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm" placeholder="Pegar URL de un JSON..."><button id="custom-url-load-btn" class="bg-indigo-500 text-white px-3 py-2 rounded-lg shadow-sm hover:bg-indigo-600 transition flex-shrink-0">Cargar</button></div><div class="mt-2"><label for="custom-file-input" class="w-full cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600 transition text-center block">Abrir archivo local...</label><input type="file" id="custom-file-input" class="hidden" accept=".json"></div></div><div class="mt-6 flex justify-end"><button id="add-tab-close-btn" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition">Cerrar</button></div></div></div>
     </div>
 
     <script type="module">
@@ -547,15 +547,23 @@
             }
         });
         ui.addTabCloseBtn.addEventListener('click', () => ui.addTabModal.classList.add('hidden'));
-        ui.clearCacheBtn.addEventListener('click', () => {
-            let clearedCount = 0;
-            for (const key in localStorage) {
-                if (key.startsWith('formula-cache-')) {
-                    localStorage.removeItem(key);
-                    clearedCount++;
+        ui.clearCacheBtn.addEventListener('click', async () => {
+            // Clear localStorage and sessionStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            // Clear Cache Storage
+            if (window.caches && caches.keys) {
+                const cacheNames = await caches.keys();
+                for (const name of cacheNames) {
+                    await caches.delete(name);
                 }
             }
-            alert(`Caché de ${clearedCount} archivo(s) de fórmulas limpiada.`);
+            // Clear cookies
+            document.cookie.split(";").forEach((cookie) => {
+                const name = cookie.split("=")[0].trim();
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+            });
+            alert('All browser data has been cleared.');
         });
         ui.customUrlLoadBtn.addEventListener('click', () => {
             const url = ui.customUrlInput.value.trim();

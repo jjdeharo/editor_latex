@@ -1,135 +1,195 @@
 {
   "categorias": [
     {
-      "nombre": "Entornos matemáticos básicos",
-      "id": "entornos-matematicos-basicos",
-      "grid_template_columns": "repeat(auto-fit, minmax(180px, 1fr))",
+      "id": "entornos-ecuaciones-basicas",
+      "nombre": "Ecuaciones básicas",
       "isCollapsed": false,
+      "grid_template_columns": "repeat(auto-fit, minmax(150px, 1fr))",
       "elementos": [
         {
           "type": "button",
-          "latex": "\\begin{equation} \\end{equation}",
           "display": "\\begin{equation} a = b + c \\end{equation}",
+          "latex": "\\begin{equation} \\end{equation}",
           "title": "Ecuación numerada"
         },
         {
           "type": "button",
-          "latex": "\\begin{equation*} \\end{equation*}",
           "display": "\\begin{equation*} a = b + c \\end{equation*}",
+          "latex": "\\begin{equation*} \\end{equation*}",
           "title": "Ecuación sin numerar"
-        },
+        }
+      ]
+    },
+    {
+      "id": "entornos-alineacion",
+      "nombre": "Alineación",
+      "isCollapsed": false,
+      "grid_template_columns": "repeat(auto-fit, minmax(150px, 1fr))",
+      "elementos": [
         {
           "type": "button",
-          "latex": "\\begin{align} \\end{align}",
           "display": "\\begin{align} a &= b + c \\\\ d &= e + f \\end{align}",
+          "latex": "\\begin{align} \\end{align}",
           "title": "Alinear ecuaciones"
         },
         {
           "type": "button",
-          "latex": "\\begin{align*} \\end{align*}",
           "display": "\\begin{align*} a &= b + c \\\\ d &= e + f \\end{align*}",
+          "latex": "\\begin{align*} \\end{align*}",
           "title": "Alinear sin numerar"
         },
         {
           "type": "button",
-          "latex": "\\begin{gather} \\end{gather}",
+          "display": "\\begin{multline} a + b + c + d + e \\\\ + f + g + h \\end{multline}",
+          "latex": "\\begin{multline} \\end{multline}",
+          "title": "Multilínea con numeración"
+        },
+        {
+          "type": "button",
+          "display": "\\begin{multline*} a + b + c + d + e \\\\ + f + g + h \\end{multline*}",
+          "latex": "\\begin{multline*} \\end{multline*}",
+          "title": "Multilínea sin numerar"
+        },
+        {
+          "type": "button",
+          "display": "\\begin{flalign} a &= b && c &= d \\end{flalign}",
+          "latex": "\\begin{flalign} \\end{flalign}",
+          "title": "Alinear con separación"
+        },
+        {
+          "type": "button",
+          "display": "\\begin{flalign*} a &= b && c &= d \\end{flalign*}",
+          "latex": "\\begin{flalign*} \\end{flalign*}",
+          "title": "Alinear con separación sin numerar"
+        }
+      ]
+    },
+    {
+      "id": "entornos-agrupacion",
+      "nombre": "Agrupación",
+      "isCollapsed": false,
+      "grid_template_columns": "repeat(auto-fit, minmax(150px, 1fr))",
+      "elementos": [
+        {
+          "type": "button",
           "display": "\\begin{gather} a = b + c \\\\ d = e + f \\end{gather}",
+          "latex": "\\begin{gather} \\end{gather}",
           "title": "Agrupar ecuaciones"
         },
         {
           "type": "button",
-          "latex": "\\begin{gather*} \\end{gather*}",
           "display": "\\begin{gather*} a = b + c \\\\ d = e + f \\end{gather*}",
+          "latex": "\\begin{gather*} \\end{gather*}",
           "title": "Agrupar sin numerar"
         }
       ]
     },
     {
-      "nombre": "Entornos delimitadores",
-      "id": "entornos-delimitadores",
-      "grid_template_columns": "repeat(auto-fit, minmax(160px, 1fr))",
+      "id": "entornos-subentornos",
+      "nombre": "Subentornos",
       "isCollapsed": false,
+      "grid_template_columns": "repeat(auto-fit, minmax(150px, 1fr))",
       "elementos": [
         {
           "type": "button",
-          "latex": "\\left( \\right)",
+          "display": "\\begin{subequations} \\begin{equation} a = b \\end{equation} \\begin{equation} c = d \\end{equation} \\end{subequations}",
+          "latex": "\\begin{subequations} \\end{subequations}",
+          "title": "Subecuaciones"
+        },
+        {
+          "type": "button",
+          "display": "\\begin{equation} \\begin{split} a &= b + c \\\\ d &= e + f \\end{split} \\end{equation}",
+          "latex": "\\begin{split} \\end{split}",
+          "title": "División dentro de ecuación"
+        }
+      ]
+    },
+    {
+      "id": "entornos-delimitadores",
+      "nombre": "Entornos delimitadores",
+      "isCollapsed": false,
+      "grid_template_columns": "repeat(auto-fit, minmax(150px, 1fr))",
+      "elementos": [
+        {
+          "type": "button",
           "display": "\\left( a + b \\right)",
+          "latex": "\\left( \\right)",
           "title": "Paréntesis ajustables"
         },
         {
           "type": "button",
-          "latex": "\\left[ \\right]",
           "display": "\\left[ a + b \\right]",
+          "latex": "\\left[ \\right]",
           "title": "Corchetes ajustables"
         },
         {
           "type": "button",
-          "latex": "\\left\\{ \\right\\}",
           "display": "\\left\\{ a + b \\right\\}",
+          "latex": "\\left\\{ \\right\\}",
           "title": "Llaves ajustables"
         },
         {
           "type": "button",
-          "latex": "\\left| \\right|",
           "display": "\\left| a + b \\right|",
+          "latex": "\\left| \\right|",
           "title": "Valor absoluto ajustable"
         }
       ]
     },
     {
-      "nombre": "Entornos de matrices",
       "id": "entornos-matrices",
-      "grid_template_columns": "repeat(auto-fit, minmax(180px, 1fr))",
+      "nombre": "Entornos de matrices",
       "isCollapsed": false,
+      "grid_template_columns": "repeat(auto-fit, minmax(180px, 1fr))",
       "elementos": [
         {
           "type": "button",
-          "latex": "\\begin{matrix} a & b \\\\ c & d \\end{matrix}",
           "display": "\\begin{matrix} a & b \\\\ c & d \\end{matrix}",
+          "latex": "\\begin{matrix} \\end{matrix}",
           "title": "Matriz simple"
         },
         {
           "type": "button",
-          "latex": "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}",
           "display": "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}",
+          "latex": "\\begin{pmatrix} \\end{pmatrix}",
           "title": "Matriz con paréntesis"
         },
         {
           "type": "button",
-          "latex": "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}",
           "display": "\\begin{bmatrix} a & b \\\\ c & d \\end{bmatrix}",
+          "latex": "\\begin{bmatrix} \\end{bmatrix}",
           "title": "Matriz con corchetes"
         },
         {
           "type": "button",
-          "latex": "\\begin{Bmatrix} a & b \\\\ c & d \\end{Bmatrix}",
           "display": "\\begin{Bmatrix} a & b \\\\ c & d \\end{Bmatrix}",
+          "latex": "\\begin{Bmatrix} \\end{Bmatrix}",
           "title": "Matriz con llaves"
         },
         {
           "type": "button",
-          "latex": "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}",
           "display": "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}",
+          "latex": "\\begin{vmatrix} \\end{vmatrix}",
           "title": "Determinante con barras"
         },
         {
           "type": "button",
-          "latex": "\\begin{Vmatrix} a & b \\\\ c & d \\end{Vmatrix}",
           "display": "\\begin{Vmatrix} a & b \\\\ c & d \\end{Vmatrix}",
+          "latex": "\\begin{Vmatrix} \\end{Vmatrix}",
           "title": "Determinante con barras dobles"
         }
       ]
     },
     {
-      "nombre": "Entornos de casos",
       "id": "entornos-casos",
-      "grid_template_columns": "repeat(auto-fit, minmax(200px, 1fr))",
+      "nombre": "Entornos de casos",
       "isCollapsed": false,
+      "grid_template_columns": "repeat(auto-fit, minmax(200px, 1fr))",
       "elementos": [
         {
           "type": "button",
-          "latex": "\\begin{cases} a &\\text{si } x < 0 \\\\ b &\\text{si } x \\ge 0 \\end{cases}",
           "display": "\\begin{cases} a &\\text{si } x < 0 \\\\ b &\\text{si } x \\ge 0 \\end{cases}",
+          "latex": "\\begin{cases} \\end{cases}",
           "title": "Casos por tramos"
         }
       ]

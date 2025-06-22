@@ -1,4 +1,4 @@
-# Editor $\LaTeX$ online
+# Editor de ecuaciones $\LaTeX$ online
 
 ## Descripción
 

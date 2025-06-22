@@ -13,6 +13,24 @@
         },
         {
           "type": "button",
+          "title": "Fracción pequeña",
+          "latex": "\\tfrac{}{}",
+          "display": "\\tfrac{a}{b}"
+        },
+        {
+          "type": "button",
+          "title": "Fracción grande",
+          "latex": "\\dfrac{}{}",
+          "display": "\\dfrac{a}{b}"
+        },
+        {
+          "type": "button",
+          "title": "Fracción anidada",
+          "latex": "\\cfrac{}{}",
+          "display": "\\cfrac{1}{1 + \\cfrac{1}{2 + \\cfrac{1}{3}}}\n"
+        },
+        {
+          "type": "button",
           "title": "Infinito",
           "latex": "\\infty",
           "display": ""
@@ -72,7 +90,7 @@
           "display": ""
         }
       ],
-      "isCollapsed": true
+      "isCollapsed": false
     },
     {
       "nombre": "Delimitadores",

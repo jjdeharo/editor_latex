@@ -105,7 +105,7 @@
     <footer class="text-center py-4 bg-gray-100 text-gray-600 text-sm">
         <p><a href="https://labia.tiddlyhost.com" target="_blank" class="hover:text-blue-600">Laboratorio de aplicaciones educativas</a> - <a href="https://bilateria.org" target="_blank" class="hover:text-blue-600">Aplicación hecha por Juan José de Haro</a></p>
         <p class="mt-1"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" class="hover:text-blue-600">Licencia Creative Commons BY-SA</a></p>
-            <p class="mt-1">v4.28</p>
+            <p class="mt-1">v4.29</p>
 </footer>
 
     <!-- Modales -->
@@ -208,7 +208,7 @@
                 categoryDiv.dataset.catId = catIndex;
                 const header = document.createElement('div');
                 header.className = 'flex justify-between items-center mb-3 pb-2 border-b';
-                header.innerHTML = `<div class="flex items-center"><span class="drag-handle cat-drag-handle">&#9776;</span><span class="toggle-collapse-btn text-gray-500 hover:text-gray-800" data-cat-index="${catIndex}"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></span><h3 class="text-xl font-semibold text-gray-700 ml-1">${cat.nombre}</h3></div><div class="space-x-2"><button data-cat-index="${catIndex}" class="edit-cat-btn text-blue-500 hover:text-blue-700" title="Editar categoría">&#9998;</button><button data-cat-index="${catIndex}" class="delete-cat-btn text-red-500 hover:text-red-700" title="Eliminar categoría">&#10006;</button><button data-cat-index="${catIndex}" class="add-el-btn bg-green-500 text-white text-sm px-3 py-1 rounded hover:bg-green-600" title="Añadir elemento">+</button></div>`;
+                header.innerHTML = `<div class="flex items-center"><span class="drag-handle cat-drag-handle">&#9776;</span><span class="toggle-collapse-btn text-gray-500 hover:text-gray-800" data-cat-index="${catIndex}"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></span><h3 class="text-xl font-semibold text-gray-700 ml-1">${cat.nombre} (${cat.elementos ? cat.elementos.length : 0})</h3></div><div class="space-x-2"><button data-cat-index="${catIndex}" class="edit-cat-btn text-blue-500 hover:text-blue-700" title="Editar categoría">&#9998;</button><button data-cat-index="${catIndex}" class="delete-cat-btn text-red-500 hover:text-red-700" title="Eliminar categoría">&#10006;</button><button data-cat-index="${catIndex}" class="add-el-btn bg-green-500 text-white text-sm px-3 py-1 rounded hover:bg-green-600" title="Añadir elemento">+</button></div>`;
                 const elementsList = document.createElement('div');
                 elementsList.className = 'elements-list space-y-2 pl-8';
                 if (isCollapsed) elementsList.classList.add('hidden');
@@ -239,7 +239,7 @@
                 const categoryDiv = document.createElement('div');
                 categoryDiv.className = 'mb-6 preview-category';
                 categoryDiv.dataset.previewCatId = catIndex;
-                categoryDiv.innerHTML = `<h3 class="text-xl font-semibold text-gray-700 mb-3">${cat.nombre}</h3>`;
+                categoryDiv.innerHTML = `<h3 class="text-xl font-semibold text-gray-700 mb-3">${cat.nombre} (${cat.elementos ? cat.elementos.length : 0})</h3>`;
                 const gridDiv = document.createElement('div');
                 gridDiv.className = 'grid gap-2';
                 gridDiv.style.gridTemplateColumns = cat.grid_template_columns || 'repeat(auto-fit, minmax(80px, 1fr))';
@@ -310,7 +310,8 @@
             tabs.forEach(tab => {
                 const tabEl = document.createElement('button');
                 tabEl.className = `tab px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 ${tab.id === activeTabId ? 'active border-indigo-500' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
-                tabEl.textContent = tab.name;
+                const totalElements = (tab.data && tab.data.categorias) ? tab.data.categorias.reduce((sum, cat) => sum + (cat.elementos ? cat.elementos.length : 0), 0) : 0;
+                tabEl.textContent = `${tab.name} (${totalElements})`;
                 tabEl.dataset.tabId = tab.id;
                 tabEl.addEventListener('click', () => switchTab(tab.id));
                 if (tab.id !== 'base') {

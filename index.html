@@ -7,12 +7,12 @@
 <title>Editor de ecuaciones LaTeX online</title>
 <script>
         window.MathJax = {
-            loader: {load: ['[tex]/color']},
+            loader: {load: ['[tex]/color', '[tex]/mhchem']},
             tex: {
                 inlineMath: [['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true,
-                packages: {'[+]': ['cases', 'mathtools', 'color']}
+                packages: {'[+]': ['cases', 'mathtools', 'color', 'mhchem']}
             },
             svg: {
                 fontCache: 'local'
@@ -52,7 +52,7 @@
             color: var(--text-color);
         }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; color: var(--white); }
+        .header { text-align: center; margin-bottom: 30px; color: var(--white);  position: relative; }
         .header h1 { font-size: 2.5rem; margin: 0 0 10px 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
         .header p { font-size: 1.1rem; opacity: 0.9; margin: 0; }
         .tabs-section { position: relative; background: var(--white); border-radius: var(--border-radius); box-shadow: var(--box-shadow); margin-bottom: 20px; overflow: hidden; }
@@ -190,7 +190,48 @@
         @media (max-width: 600px) {
             .header h1 { font-size: 2rem; } .tab-btn { padding: 12px 15px; font-size: 14px; } .container { padding: 10px; } .modal-content { padding: 20px; } .matrix-builder { justify-content: flex-start; }
         }
-    </style>
+    
+        #maximize-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--white);
+            cursor: pointer;
+            z-index: 1100;
+            opacity: 0.8;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        #maximize-btn:hover { transform: scale(1.2); opacity: 1; }
+
+/* v4.49: Ajuste para evitar desbordamiento en botones de Recientes */
+.toolbar-btn {
+    overflow: hidden;          /* Oculta partes que excedan el límite del botón */
+    font-size: 0.85rem;        /* Reduce tamaño global de la fórmula renderizada */
+}
+.toolbar-btn svg {
+    max-width: 100%;           /* Asegura que las fórmulas SVG escalen dentro del botón */
+    height: auto;
+}
+
+/* v4.50: Reposition maximize button next to settings gear */
+#maximize-btn {
+    position: static !important;
+    margin-left: 6px;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--dark-gray);
+    transition: transform 0.2s, color 0.2s, opacity 0.2s;
+}
+#maximize-btn:hover {
+    color: var(--primary-color);
+    transform: scale(1.2);
+}
+</style>
 </head>
 <body>
 <div class="container">
@@ -205,6 +246,7 @@
 <button id="clear-search-btn" title="Borrar búsqueda">×</button>
 </div>
 <button id="settings-btn" title="Personalizar menú">⚙️</button>
+<button id="maximize-btn" title="Pantalla completa">🗖</button>
 </div>
 <div class="tabs-container" id="tabs-container"></div>
 <div class="toolbar-wrapper">
@@ -219,9 +261,9 @@
 </div>
 <textarea id="latex-input" placeholder="Escribe aquí tu código... \frac{a}{b}" spellcheck="false"></textarea>
 <div class="copy-options-container">
-<label for="delimiter-selector">Copiar con delimitadores:</label>
+<label for="delimiter-selector">Delimitadores de la fórmula:</label>
 <select class="mathjax_ignore" id="delimiter-selector">
-<option selected="" value="none">Sin delimitadores</option>
+<option selected="" value="none">Sin delimitador</option>
 <option value="parentheses">\(...\)</option>
 <option value="brackets">\[...\]</option>
 <option value="double_dollar">$$...$$</option>
@@ -229,9 +271,11 @@
 </select>
 </div>
 <div class="panel-actions">
-<button class="btn btn-primary" id="copy-button">Copiar código LaTeX</button>
-<button class="btn btn-secondary" id="clear-button">Borrar código</button>
-<button class="btn btn-success" id="insert-button">Insertar en eXeLearning</button>
+
+<button class="btn btn-success" id="insert-button">Insertar</button>
+<button class="btn btn-primary" id="copy-button">Copiar</button>
+<button class="btn btn-secondary" id="clear-button">Borrar</button>
+
 </div>
 <div class="copy-feedback" id="copy-code-feedback"></div>
 </div>
@@ -327,6 +371,71 @@
         async function initializeLatexEditor() {
             // --- REFERENCIAS AL DOM ---
             const latexInput = document.getElementById('latex-input');
+
+function getTinymceRef() {
+    // check opener
+    if (window.opener?.tinymce && window.opener.tinymce.activeEditor) return window.opener.tinymce;
+    // walk up parent chain (max 7 levels)
+    let w = window;
+    for (let i = 0; i < 7; i++) {
+        if (w.parent && w.parent !== w) {
+            w = w.parent;
+            try {
+                if (w.tinymce && w.tinymce.activeEditor) return w.tinymce;
+            } catch(e){ /* cross-origin */ }
+        } else break;
+    }
+    return null;
+}
+const tinymceRef = getTinymceRef();
+
+// --- Utility: strip formula delimiters added by TinyMCE selections ---
+function stripLatexDelimiters(code) {
+    if (!code) return code;
+    const trimmed = code.trim();
+    const patterns = [
+        /^\\\(([\s\S]+?)\\\)$/,   // \( ... \)
+        /^\\\[([\s\S]+?)\\\]$/,   // \\[ ... \\]
+        /^\$\$([\s\S]+?)\$\$$/,     // $$ ... $$
+        /^\$([\s\S]+?)\$$/            // $ ... $
+    ];
+    for (const p of patterns) {
+        const m = trimmed.match(p);
+        if (m) return m[1].trim();
+    }
+    return trimmed;
+}
+// ----- Detect delimiters in a LaTeX snippet and update the selector -----
+
+
+function autoPickDelimiter(latexFragment){
+    const selectorEl = document.getElementById('delimiter-selector');
+    if(!selectorEl || !latexFragment) return;
+    const frag = latexFragment.trim();
+    const insideExe = !!(typeof tinymceRef !== 'undefined' && tinymceRef && tinymceRef.activeEditor);
+
+    if(/^\\\(.+?\\\)$/.test(frag)){ selectorEl.value = 'parentheses'; return; }
+    if(/^\\\[([\s\S]+?)\\\]$/.test(frag)){ selectorEl.value = 'brackets'; return; }
+    if(/^\$\$([\s\S]+?)\$\$$/.test(frag)){ selectorEl.value = 'double_dollar'; return; }
+    if(/^\$([\s\S]+?)\$$/.test(frag)){ selectorEl.value = 'single_dollar'; return; }
+
+    // Cuando no hay delimitador explícito
+    selectorEl.value = insideExe ? 'none' : 'parentheses';
+}
+
+
+
+
+// ---- Prefill from URL (?sel=...) ----
+const urlSel = new URLSearchParams(window.location.search).get('sel');
+if (urlSel) {
+    const originalSel = decodeURIComponent(urlSel);
+autoPickDelimiter(originalSel);
+latexInput.value = stripLatexDelimiters(originalSel);
+}
+
+// ---- Robust TinyMCE reference detection ----
+
             const preview = document.getElementById('preview');
 
 // Prefill LaTeX code if coming from PasteMathDialog
@@ -334,9 +443,11 @@ try {
     if (window.opener && window.opener.PasteMathDialog && window.opener.PasteMathDialog.mathEditor && window.opener.PasteMathDialog.mathEditor.field) {
         const parentLatex = window.opener.PasteMathDialog.mathEditor.field.val().trim();
         if (parentLatex) {
-            latexInput.value = parentLatex;
-            updatePreview(); // ensure preview refresh
-        }
+
+    autoPickDelimiter(parentLatex);
+    latexInput.value = stripLatexDelimiters(parentLatex);
+    updatePreview();
+}
     }
 } catch (err) {
     console.warn('No se pudo obtener código del diálogo padre:', err);
@@ -346,13 +457,37 @@ try {
             const clearButton = document.getElementById('clear-button');
             const insertButton = document.getElementById('insert-button');
 // Ocultar el botón si no se está ejecutando dentro de eXeLearning
-let insideExe = false;
-try {
-    insideExe = !!(window.opener && window.opener.PasteMathDialog && window.opener.PasteMathDialog.mathEditor && window.opener.PasteMathDialog.mathEditor.field);
-} catch (e) { insideExe = false; }
-if (!insideExe) {
+const insideExe = !!(tinymceRef && tinymceRef.activeEditor);
+
+
+/* Ajustes de interfaz según contexto */
+if (insideExe) {
+    
+// Hide header and footer inside eXeLearning
+const headerEl = document.querySelector('.header');
+const footerEl = document.querySelector('.footer');
+if (headerEl) headerEl.style.display = 'none';
+if (footerEl) footerEl.style.display = 'none';
+// Ocultar botón copiar
+    copyButton.style.display = 'none';
+    // Limitar opciones de delimitador solo a \(...\) y \[...\]
+    const selectorEl = document.getElementById('delimiter-selector');
+    const allowedDelims = ['none', 'parentheses', 'brackets'];
+    Array.from(selectorEl.options).forEach(opt => {
+        if (!allowedDelims.includes(opt.value)) {
+            opt.remove();
+        }
+    });
+    // Si el editor se abre sin un texto seleccionado, el delimitador por defecto será \(...\)
+    if (!latexInput.value.trim()) {
+        selectorEl.value = 'parentheses';
+    }
+
+} else {
+    // Fuera de eXeLearning: ocultar botón insertar
     insertButton.style.display = 'none';
 }
+
 
             const viewImageButton = document.getElementById('view-image-button');
             const delimiterSelector = document.getElementById('delimiter-selector');
@@ -385,6 +520,7 @@ if (!insideExe) {
             const openChatGptBtn = document.getElementById('open-chatgpt-btn');
             const copyAiPromptBtn = document.getElementById('copy-ai-prompt-btn');
             const aiFeedback = document.getElementById('ai-feedback');
+            const maximizeBtn = document.getElementById('maximize-btn');
             
             // --- CONFIGURACIÓN ---
             const MANIFEST_URL = './menus.json';
@@ -574,7 +710,7 @@ manifest.menus.forEach(item=>{
 
     rebuildToolbarAndUI();
     updatePreview();
-    addFooter();
+addFooter();
 };
 
 
@@ -741,7 +877,7 @@ async function loadAndDisplayAvailableMenus(forceReload = false) {
                 updatePreview();
                 if (textToInsert.includes('\\begin{')) return;
                 trackSymbolUsage(textToInsert);
-            }
+}
             function generateImage(callback) {
                 const svgElement = preview.querySelector('svg');
                 if (!svgElement) { showImageModal('<p>No hay fórmula para capturar.</p>', [{text: 'OK', class: 'btn-primary'}]); return; }
@@ -882,7 +1018,7 @@ async function loadAndDisplayAvailableMenus(forceReload = false) {
                 }
             });
             function addFooter() {
-                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.28</p>`;
+                document.getElementById('page-footer').innerHTML = `<p style="margin-bottom: 10px;"><a href="https://labia.tiddlyhost.com" target="_blank" rel="noopener noreferrer">Laboratorio de aplicaciones educativas</a> | <a href="https://bilateria.org" target="_blank" rel="noopener noreferrer">Aplicación hecha por Juan José de Haro</a></p><p style="margin-bottom: 10px;"><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener noreferrer">Licencia Creative Commons BY-SA</a></p><p style="margin-top: 20px; font-size: 0.8em; opacity: 0.7;">v4.50</p>`;
             }
 
             // --- EVENT LISTENERS ---
@@ -895,8 +1031,8 @@ async function loadAndDisplayAvailableMenus(forceReload = false) {
                 if (!rawLatex) return;
                 let textToCopy;
                 switch (delimiterSelector.value) {
-                    case 'parentheses': textToCopy = `\\(${rawLatex}\\)`; break;
-                    case 'brackets': textToCopy = `\\[\n${rawLatex}\n\\]`; break;
+        case 'parentheses': textToCopy = `\\(${rawLatex}\\)`; break;
+        case 'brackets':   textToCopy = `\\[\n${rawLatex}\n\\]`; break;
                     case 'double_dollar': textToCopy = `$$\n${rawLatex}\n$$`; break;
                     case 'single_dollar': textToCopy = `$${rawLatex}$`; break;
                     default: textToCopy = rawLatex;
@@ -908,20 +1044,39 @@ async function loadAndDisplayAvailableMenus(forceReload = false) {
             });
             clearButton.addEventListener('click', () => { latexInput.value = ''; latexInput.focus(); updatePreview(); });
 
+
+
+
+
 insertButton.addEventListener('click', () => {
     const rawLatex = latexInput.value.trim();
     if (!rawLatex) return;
-    try {
-        if (window.opener && window.opener.PasteMathDialog && window.opener.PasteMathDialog.mathEditor && window.opener.PasteMathDialog.mathEditor.field) {
-            window.opener.PasteMathDialog.mathEditor.field.val(rawLatex);
-        }
-    } catch (err) {
-        console.error('Error al insertar en eXeLearning:', err);
+
+    // Añadir delimitadores seleccionados antes de insertar
+    const selectorEl = document.getElementById('delimiter-selector');
+    let latexToInsert;
+    switch (selectorEl.value) {
+        case 'parentheses': latexToInsert = `\\(${rawLatex}\\)`; break;
+        case 'brackets':   latexToInsert = `\\[${rawLatex}\\]`; break;
+        default:           latexToInsert = rawLatex;
     }
+
+    try {
+        if (tinymceRef && tinymceRef.activeEditor) {
+            tinymceRef.activeEditor.execCommand('mceReplaceContent', false, latexToInsert);
+            tinymceRef.activeEditor.windowManager?.close();
+            return;
+        }
+        if (window.opener?.PasteMathDialog?.mathEditor?.field) {
+            window.opener.PasteMathDialog.mathEditor.field.val(latexToInsert);
+        }
+    } catch(err){ console.error('Error insert:', err);}
     window.close();
 });
 
-            viewImageButton.addEventListener('click', handleViewImage);
+
+
+viewImageButton.addEventListener('click', handleViewImage);
             document.getElementById('image-modal').addEventListener('click', (e) => { if (e.target.id === 'image-modal') document.getElementById('image-modal').classList.remove('active'); });
             settingsBtn.addEventListener('click', openSettingsModal);
             closeSettingsBtn.addEventListener('click', closeSettingsModal);
@@ -999,7 +1154,27 @@ fileInput.addEventListener('change', () => {
             generateAiPromptBtn.addEventListener('click', generateAiPrompt);
             copyAiPromptBtn.addEventListener('click', copyAiPrompt);
 
-            initializeApp();
+            
+            if (maximizeBtn) {
+                maximizeBtn.addEventListener('click', () => {
+                    if (!document.fullscreenElement) {
+                        if (document.documentElement.requestFullscreen) {
+                            document.documentElement.requestFullscreen().catch(() => {
+                                try {
+                                    window.moveTo(0,0);
+                                    window.resizeTo(screen.availWidth, screen.availHeight);
+                                } catch(err){}
+                            });
+                        }
+                        maximizeBtn.textContent = '🗗';
+                    } else {
+                        if (document.exitFullscreen) document.exitFullscreen();
+                        maximizeBtn.textContent = '🗖';
+                    }
+                });
+            }
+
+initializeApp();
         }
     </script>
 </body>
